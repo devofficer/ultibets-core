@@ -6,6 +6,8 @@ require("dotenv").config();
  * @type import('hardhat/config').HardhatUserConfig
  */
 module.exports = {
+  defaultNetwork: "localhost",
+  
   solidity: {
     compilers: [
       {
@@ -19,7 +21,10 @@ module.exports = {
 
   networks: {
     hardhat: {
-      allowUnlimitedContractSize: true
+      chainId: 31337,
+    },
+    localhost: {
+      chainId: 31337,
     },
     rinkeby: {
       url: process.env.RINKEBY_RPC_URL,
