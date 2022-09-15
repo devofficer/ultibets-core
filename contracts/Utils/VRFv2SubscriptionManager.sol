@@ -1,56 +1,33 @@
 // SPDX-License-Identifier: MIT
-// An example of a consumer contract that also owns and manages the subscription
-pragma solidity ^0.8.7;
+pragma solidity ^0.8.0;
 
 import "@chainlink/contracts/src/v0.8/interfaces/LinkTokenInterface.sol";
 import "@chainlink/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol";
 import "@chainlink/contracts/src/v0.8/VRFConsumerBaseV2.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
-/**
- * THIS IS AN EXAMPLE CONTRACT THAT USES HARDCODED VALUES FOR CLARITY.
- * THIS IS AN EXAMPLE CONTRACT THAT USES UN-AUDITED CODE.
- * DO NOT USE THIS CODE IN PRODUCTION.
- */
-
-contract VRFv2SubscriptionManager is VRFConsumerBaseV2 {
+contract VRFv2SubscriptionManager is VRFConsumerBaseV2, Ownable {
   VRFCoordinatorV2Interface COORDINATOR;
   LinkTokenInterface LINKTOKEN;
 
-  // Goerli coordinator. For other networks,
-  // see https://docs.chain.link/docs/vrf-contracts/#configurations
-  address vrfCoordinator = 0x6168499c0cFfCaCD319c818142124B7A15E857ab;
-
-  // Goerli LINK token contract. For other networks, see
-  // https://docs.chain.link/docs/vrf-contracts/#configurations
-  address link_token_contract = 0x01BE23585060835E02B77ef475b0Cc51aA1e0709;
-
-  // The gas lane to use, which specifies the maximum gas price to bump to.
-  // For a list of available gas lanes on each network,
-  // see https://docs.chain.link/docs/vrf-contracts/#configurations
-  bytes32 keyHash = 0xd89b2bf150e3b9e13446986e571fb9cab24b13cea0a43ea20a6049a85cc807cc;
-
-  // A reasonable default is 100000, but this value could be different
-  // on other networks.
+  bytes32 keyHash;
   uint32 callbackGasLimit = 100000;
-
-  // The default is 3, but you can set this higher.
   uint16 requestConfirmations = 3;
-
-  // For this example, retrieve 2 random values in one request.
-  // Cannot exceed VRFCoordinatorV2.MAX_NUM_WORDS.
   uint32 numWords =  2;
 
   // Storage parameters
   uint256[] public s_randomWords;
   uint256 public s_requestId;
   uint64 public s_subscriptionId;
-  address s_owner;
 
-  constructor() VRFConsumerBaseV2(vrfCoordinator) {
-    COORDINATOR = VRFCoordinatorV2Interface(vrfCoordinator);
-    LINKTOKEN = LinkTokenInterface(link_token_contract);
-    s_owner = msg.sender;
-    //Create a new subscription when you deploy the contract.
+  constructor(
+    address _vrfCoordinator,
+    address _linkTokenContract,
+    bytes32 _keyHash
+  ) VRFConsumerBaseV2(_vrfCoordinator) {
+    keyHash = _keyHash;
+    COORDINATOR = VRFCoordinatorV2Interface(_vrfCoordinator);
+    LINKTOKEN = LinkTokenInterface(_linkTokenContract);
     createNewSubscription();
   }
 
@@ -106,10 +83,5 @@ contract VRFv2SubscriptionManager is VRFConsumerBaseV2 {
   // 1000000000000000000 = 1 LINK
   function withdraw(uint256 amount, address to) external onlyOwner {
     LINKTOKEN.transfer(to, amount);
-  }
-
-  modifier onlyOwner() {
-    require(msg.sender == s_owner);
-    _;
   }
 }

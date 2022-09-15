@@ -1,8 +1,5 @@
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
-const EVMRevert = require('../Utils/EVMRevert').EVMRevert;
-
-
 
 let Admin;
 let PrizePool;
@@ -23,6 +20,7 @@ describe("SquidBets", function () {
 
   beforeEach(async function () {
     //////////////////////////////////get contract Factory ///////////////////////////////////////////
+    const VRFv2SubscriptionManager = await ethers.getContractFactory("VRFv2SubscriptionManager");
     const SquidBetPlayersRegistration = await ethers.getContractFactory("SquidBetPlayersRegistration");
     const SquidBetStartRound = await ethers.getContractFactory("SquidBetStartRound");
     const SquidBetSecondRound = await ethers.getContractFactory("SquidBetSecondRound");
@@ -30,12 +28,12 @@ describe("SquidBets", function () {
     const SquidBetForthRound = await ethers.getContractFactory("SquidBetForthRound");
     const SquidBetFinalRound = await ethers.getContractFactory("SquidBetFinalRound");
     const SquidBetPrizePool = await ethers.getContractFactory("SquidBetPrizePool");
-    const VRFv2Consumer = await ethers.getContractFactory("VRFv2Consumer");
+
 
     ////////////////////////////////////////////////////////////// deploy////////////////////////////
     [Admin, oracle, addr1, addr2, addr3, addr4, addr5, addr6, addr7, addr8, addr9, addr10, Treasury, PrizePool] = await ethers.getSigners();
-    
-    this.vrfConsumer = await VRFv2Consumer.deploy();
+    // Chainlink VRF
+    this.vrf = await VRFv2SubscriptionManager.deploy();
 
     //player registration
     this.squidBetPlayersRegistration = await SquidBetPlayersRegistration.deploy(Treasury.address, PrizePool.address);
@@ -58,7 +56,7 @@ describe("SquidBets", function () {
     ///// Final Round ///
 
     this.squidBetFinalRound = await SquidBetFinalRound.deploy(PrizePool.address,
-      this.squidBetForthRound.address)
+      this.squidBetForthRound.address, this.vrf.address)
 
 
     this.squidBetPrizePool = await SquidBetPrizePool.deploy(Treasury.address);
@@ -69,6 +67,7 @@ describe("SquidBets", function () {
 
     /////////////////deployed////////////////////////////////////////////      
 
+    await this.vrf.deployed();
     await this.squidBetPlayersRegistration.deployed();
     await this.squidBetStartRound.deployed();
     await this.squidBetSecondRound.deployed();
@@ -77,6 +76,7 @@ describe("SquidBets", function () {
     await this.squidBetFinalRound.deployed();
     await this.squidBetPrizePool.deployed();
 
+    await this.vrf.connect(Admin).addOracle(oracle.address);
     await this.squidBetPlayersRegistration.connect(Admin).addOracle(oracle.address);
     await this.squidBetStartRound.connect(Admin).addOracle(oracle.address);
     await this.squidBetSecondRound.connect(Admin).addOracle(oracle.address);
@@ -137,7 +137,7 @@ describe("SquidBets", function () {
     await this.squidBetStartRound.connect(addr3).placeBet("1", { value: ethers.utils.parseEther("5.0") });
     await this.squidBetStartRound.connect(addr4).placeBet("1", { value: ethers.utils.parseEther("5.0") });
     await this.squidBetStartRound.connect(addr5).placeBet("0", { value: ethers.utils.parseEther("5.0") });
-    await expect(this.squidBetStartRound.connect(addr6).placeBet("1", { value: ethers.utils.parseEther("5.0") })).to.be.revertedWith(EVMRevert);
+    await expect(this.squidBetStartRound.connect(addr6).placeBet("1", { value: ethers.utils.parseEther("5.0") })).to.be.revertedWith("revert");
 
 
     await this.squidBetStartRound.connect(Admin).stopBet();

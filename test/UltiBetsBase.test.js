@@ -163,7 +163,7 @@ describe("UltiBetsBet", async function () {
     );
 
     // Bettor3 was entirely on losing side; will underflow since fee is non-zero but winning bet is
-    await expect(this.ultiBetsBet.connect(bettor3).withdrawGain()).to.be.revertedWith(EVMRevert);
+    await expect(this.ultiBetsBet.connect(bettor3).withdrawGain()).to.be.revertedWith("revert");
   });
 
   it("Can withdraw gains: diff. bet amts on both sides", async function () {
@@ -219,7 +219,7 @@ describe("UltiBetsBet", async function () {
     );
 
     // Bettor3 was entirely on losing side; will underflow since fee is non-zero but winning bet is
-    await expect(this.ultiBetsBet.connect(bettor3).withdrawGain()).to.be.revertedWith(EVMRevert);
+    await expect(this.ultiBetsBet.connect(bettor3).withdrawGain()).to.be.revertedWith("revert");
   });
 
   it("Can withdraw earned fees", async function () {
@@ -306,8 +306,8 @@ describe("UltiBetsBet", async function () {
     await this.ultiBetsBet.withdrawEarnedFees();
 
     // Will underflow as no bet on winning side
-    await expect(this.ultiBetsBet.connect(bettor1).withdrawGain()).to.be.revertedWith(EVMRevert);
-    await expect(this.ultiBetsBet.connect(bettor2).withdrawGain()).to.be.revertedWith(EVMRevert);
+    await expect(this.ultiBetsBet.connect(bettor1).withdrawGain()).to.be.revertedWith("revert");
+    await expect(this.ultiBetsBet.connect(bettor2).withdrawGain()).to.be.revertedWith("revert");
   });
 
   it("Can have most bets on losing side", async function () {
@@ -336,8 +336,8 @@ describe("UltiBetsBet", async function () {
     await this.ultiBetsBet.withdrawEarnedFees();
 
     // Will underflow as no bet on winning side
-    await expect(this.ultiBetsBet.connect(bettor1).withdrawGain()).to.be.revertedWith(EVMRevert);
-    await expect(this.ultiBetsBet.connect(bettor2).withdrawGain()).to.be.revertedWith(EVMRevert);
+    await expect(this.ultiBetsBet.connect(bettor1).withdrawGain()).to.be.revertedWith("revert");
+    await expect(this.ultiBetsBet.connect(bettor2).withdrawGain()).to.be.revertedWith("revert");
 
     const currBal = await ethers.provider.getBalance(bettor3.address);
     let tx = await this.ultiBetsBet.connect(bettor3).withdrawGain();
@@ -375,7 +375,7 @@ describe("UltiBetsBet", async function () {
     await this.ultiBetsBet.withdrawEarnedFees();
 
     // Will underflow as no bet on winning side
-    await expect(this.ultiBetsBet.connect(bettor3).withdrawGain()).to.be.revertedWith(EVMRevert);
+    await expect(this.ultiBetsBet.connect(bettor3).withdrawGain()).to.be.revertedWith("revert");
 
     const currBal1 = await ethers.provider.getBalance(bettor1.address);
     const currBal2 = await ethers.provider.getBalance(bettor2.address);
