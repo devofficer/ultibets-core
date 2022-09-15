@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "../Utils/CustomAdmin.sol";
+import "../utils/CustomAdmin.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import "../Utils/VRFv2SubscriptionManager.sol";
+import "../utils/VRFv2SubscriptionManager.sol";
 
 interface ISquidBetForthRound {
     function getwinners(address _address) external view returns (bool _winners);

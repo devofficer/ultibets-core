@@ -5,15 +5,15 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import "../token/interfaces/IERC20Custom.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "../interfaces/IUltiBetsERC20.sol";
 
 contract Airdrop is Ownable, ReentrancyGuard {
     address public tokenAddress;
     bytes32 private merkleRoot;
     mapping(address => bool) public airdropClaimed;
 
-    using SafeERC20 for IERC20Custom;
+    using SafeERC20 for IUltiBetsERC20;
 
     /**
      * @notice Emitted after a successful token claim
@@ -22,29 +22,21 @@ contract Airdrop is Ownable, ReentrancyGuard {
      */
     event Claim(address indexed to, uint256 amount);
 
-
-
-    
-
     constructor(address _tokenAddress, bytes32 _merkleRoot) {
         tokenAddress = _tokenAddress;
         merkleRoot = _merkleRoot;
     }
 
-      /**
-    
-    *@return merkleRoot return current merkleRoot 
+    /**
+     *@return merkleRoot return current merkleRoot
      */
-
     function getMerkleRoot() public view onlyOwner returns (bytes32) {
         return merkleRoot;
     }
-    
+
     /**
-     
      * @param _newMerkleRoot set markle root from markle tree
      */
-
     function setMerkleRoot(bytes32 _newMerkleRoot) external onlyOwner {
         require(
             _newMerkleRoot != 0x00 || _newMerkleRoot != merkleRoot,
@@ -78,7 +70,7 @@ contract Airdrop is Ownable, ReentrancyGuard {
         airdropClaimed[msg.sender] = true;
 
         // Mint tokens to address
-        IERC20Custom token = IERC20Custom(tokenAddress);
+        IUltiBetsERC20 token = IUltiBetsERC20(tokenAddress);
         token.safeTransfer(msg.sender, amount);
 
         // Emit claim event

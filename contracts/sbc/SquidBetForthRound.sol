@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "../Utils/CustomAdmin.sol";
+import "../utils/CustomAdmin.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 ///@dev this interface is how registered address is inherited

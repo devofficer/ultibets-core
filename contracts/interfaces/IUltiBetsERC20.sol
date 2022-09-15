@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-interface IAthleteXERC20 is IERC20 {
+interface IUltiBetsERC20 is IERC20 {
     function pause() external;
 
     function unpause() external;

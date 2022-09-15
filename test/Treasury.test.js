@@ -1,6 +1,5 @@
 const { expect } = require("chai");
 const { ethers, network } = require("hardhat");
-const EVMRevert = require("../utils/EVMRevert").EVMRevert;
 
 describe("Treasury", async function () {
   let deployer, user1, user2;
@@ -8,8 +7,8 @@ describe("Treasury", async function () {
   beforeEach(async function () {
     [admin, user1, user2] = await ethers.getSigners();
 
-    const TokenFactory = await ethers.getContractFactory("TestToken");
-    this.token = await TokenFactory.deploy("GA", "GA");
+    const TokenFactory = await ethers.getContractFactory("UltiBetsERC20");
+    this.token = await TokenFactory.deploy();
     const TreasuryFactory = await ethers.getContractFactory("UltibetsTreasury");
     this.treasury = await TreasuryFactory.deploy([admin.address], 1, this.token.address);
     await this.treasury.deployed();

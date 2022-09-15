@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
 /// @title Multisignature wallet - Allows multiple parties to agree on transactions before execution.

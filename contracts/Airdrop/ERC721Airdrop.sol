@@ -5,8 +5,7 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import "../token/interfaces/IERC721Custom.sol";
-
+import "@openzeppelin/contracts/interfaces/IERC721.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
 
@@ -80,7 +79,7 @@ contract Airdrop is Ownable, ReentrancyGuard {
        
 
         // Transfer  NFT to address
-        IERC721Custom token = IERC721Custom(tokenAddress);
+        IERC721 token = IERC721(tokenAddress);
         token.transferFrom(address(this), msg.sender, tokenId);
 
         // Emit claim event

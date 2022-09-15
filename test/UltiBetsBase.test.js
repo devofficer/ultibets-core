@@ -1,7 +1,5 @@
 const { expect } = require("chai");
-const { ethers, waffle } = require("hardhat");
-const provider = waffle.provider;
-const EVMRevert = require("../utils/EVMRevert").EVMRevert;
+const { ethers } = require("hardhat");
 
 describe("UltiBetsBet", async function () {
   let owner, treasury, bettor1, bettor2, bettor3;

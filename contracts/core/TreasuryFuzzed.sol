@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
 import "./Multsig.sol";
@@ -5,7 +6,7 @@ import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "../library/frequencyHelper.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import "../token/TestToken.sol";
+import "./UltiBetsERC20.sol";
 
 contract TreasuryFuzzed is ReentrancyGuard {
     address public immutable Admin;
@@ -24,7 +25,7 @@ contract TreasuryFuzzed is ReentrancyGuard {
 
     constructor() {
         Admin = msg.sender;
-        fundingCoin = new TestToken("GA", "GA");
+        fundingCoin = new UltiBetsERC20();
         withdrawalFrequency = 1;
     }
 

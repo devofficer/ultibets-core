@@ -13,7 +13,7 @@ contract VRFv2SubscriptionManager is VRFConsumerBaseV2, Ownable {
   bytes32 keyHash;
   uint32 callbackGasLimit = 100000;
   uint16 requestConfirmations = 3;
-  uint32 numWords =  2;
+  uint32 numWords =  1;
 
   // Storage parameters
   uint256[] public s_randomWords;
