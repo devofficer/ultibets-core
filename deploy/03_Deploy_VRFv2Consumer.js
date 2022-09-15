@@ -32,7 +32,7 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     ? 1
     : VERIFICATION_BLOCK_CONFIRMATIONS
   const args = [subscriptionId, vrfCoordinatorAddress, keyHash]
-  const randomNumberConsumerV2 = await deploy("RandomNumberConsumerV2", {
+  const VRFv2Consumer = await deploy("VRFv2Consumer", {
     from: deployer,
     args: args,
     log: true,
@@ -41,7 +41,7 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
 
   if (!developmentChains.includes(network.name) && process.env.ETHERSCAN_API_KEY) {
     log("Verifying...")
-    await verify(randomNumberConsumerV2.address, args)
+    await verify(VRFv2Consumer.address, args)
   }
 
   log("----------------------------------------------------")

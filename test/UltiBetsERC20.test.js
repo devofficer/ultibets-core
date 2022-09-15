@@ -1,7 +1,7 @@
 const { expect } = require('chai')
 const { ethers } = require('hardhat')
 const { loadFixture } = require('@nomicfoundation/hardhat-network-helpers')
-const { getRevertMessage } = require('./helpers')
+const { getRevertMessage } = require('../utils/test-helper')
 
 describe('UltiBetsERC20 contract', function () {
   async function deployTokenFixture() {

@@ -34,8 +34,16 @@ const networkConfig = {
 const developmentChains = ["hardhat", "localhost"]
 const VERIFICATION_BLOCK_CONFIRMATIONS = 6
 
+/**
+ * @dev Read more at https://docs.chain.link/docs/chainlink-vrf/
+ */
+ const BASE_FEE = '100000000000000000'
+ const GAS_PRICE_LINK = '1000000000' // 0.000000001 LINK per gas
+
 module.exports = {
   networkConfig,
   developmentChains,
   VERIFICATION_BLOCK_CONFIRMATIONS,
+  BASE_FEE,
+  GAS_PRICE_LINK
 }
