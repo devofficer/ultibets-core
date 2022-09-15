@@ -2,7 +2,11 @@
 // since these use the hardhat library
 // and it would be a circular dependency
 const { run, network } = require('hardhat')
-const { networkConfig } = require('./config')
+const {
+  networkConfig,
+  VERIFICATION_BLOCK_CONFIRMATIONS,
+  developmentChains,
+} = require('./config')
 
 const autoFundCheck = async (
   contractAddr,
@@ -65,8 +69,15 @@ const getRevertMessage = (reason) => {
   return `VM Exception while processing transaction: reverted with reason string '${reason}'`
 }
 
+const getWaitBlockConfirmations = (networkName) => {
+  return developmentChains.includes(networkName)
+    ? 1
+    : VERIFICATION_BLOCK_CONFIRMATIONS
+}
+
 module.exports = {
   autoFundCheck,
   verify,
   getRevertMessage,
+  getWaitBlockConfirmations,
 }
