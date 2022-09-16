@@ -6,14 +6,14 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "../interfaces/IUltiBetsERC20.sol";
+import "../interfaces/IUltiBetsToken.sol";
 
 contract Airdrop is Ownable, ReentrancyGuard {
     address public tokenAddress;
     bytes32 private merkleRoot;
     mapping(address => bool) public airdropClaimed;
 
-    using SafeERC20 for IUltiBetsERC20;
+    using SafeERC20 for IUltiBetsToken;
 
     /**
      * @notice Emitted after a successful token claim
@@ -70,7 +70,7 @@ contract Airdrop is Ownable, ReentrancyGuard {
         airdropClaimed[msg.sender] = true;
 
         // Mint tokens to address
-        IUltiBetsERC20 token = IUltiBetsERC20(tokenAddress);
+        IUltiBetsToken token = IUltiBetsToken(tokenAddress);
         token.safeTransfer(msg.sender, amount);
 
         // Emit claim event

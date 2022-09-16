@@ -1,10 +1,10 @@
 const { assert, expect } = require('chai')
 const { network, deployments, ethers } = require('hardhat')
-const { developmentChains } = require('../utils/config')
+const { isDevChain } = require('../../utils/helpers')
 
-!developmentChains.includes(network.name)
+!isDevChain(network.name)
   ? describe.skip
-  : describe('RandomNumberConsumer Unit Tests', async function () {
+  : describe('VRFv2Consumer Unit Tests', async function () {
       let vrfConsumer, vrfCoordinatorV2Mock
 
       beforeEach(async () => {
@@ -32,17 +32,11 @@ const { developmentChains } = require('../utils/config')
           ),
         ).to.emit(vrfConsumer, 'ReturnedRandomness')
 
-        const firstRandomNumber = await vrfConsumer.s_randomWords(0)
-        const secondRandomNumber = await vrfConsumer.s_randomWords(1)
+        const randomNumber = await vrfConsumer.s_randomWords(0)
 
         assert(
-          firstRandomNumber.gt(ethers.constants.Zero),
+          randomNumber.gt(ethers.constants.Zero),
           'First random number is greather than zero',
-        )
-
-        assert(
-          secondRandomNumber.gt(ethers.constants.Zero),
-          'Second random number is greather than zero',
         )
       })
 
@@ -50,14 +44,12 @@ const { developmentChains } = require('../utils/config')
         await new Promise(async (resolve, reject) => {
           vrfConsumer.once('ReturnedRandomness', async () => {
             console.log('ReturnedRandomness event fired!')
-            const firstRandomNumber = await vrfConsumer.s_randomWords(0)
-            const secondRandomNumber = await vrfConsumer.s_randomWords(1)
+            const randomNumber = await vrfConsumer.s_randomWords(0)
             // assert throws an error if it fails, so we need to wrap
             // it in a try/catch so that the promise returns event
             // if it fails.
             try {
-              assert(firstRandomNumber.gt(ethers.constants.Zero))
-              assert(secondRandomNumber.gt(ethers.constants.Zero))
+              assert(randomNumber.gt(ethers.constants.Zero))
               resolve()
             } catch (e) {
               reject(e)

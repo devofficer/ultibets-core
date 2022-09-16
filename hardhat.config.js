@@ -1,5 +1,6 @@
 require("@nomiclabs/hardhat-waffle");
 require("hardhat-deploy");
+require("solidity-coverage");
 require("dotenv").config();
 
 /**
@@ -45,5 +46,9 @@ module.exports = {
     feeCollector: {
       default: 1,
     },
+  },
+
+  mocha: {
+    timeout: 200000, // 200 seconds max for running tests
   },
 };

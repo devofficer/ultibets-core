@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 import "../utils/CustomAdmin.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import "../utils/VRFv2SubscriptionManager.sol";
+import "../utils/VRFv2Consumer.sol";
 
 interface ISquidBetForthRound {
     function getwinners(address _address) external view returns (bool _winners);
@@ -11,7 +11,7 @@ interface ISquidBetForthRound {
 
 contract SquidBetFinalRound is CustomAdmin, ReentrancyGuard {
     ISquidBetForthRound private tokenContract;
-    VRFv2SubscriptionManager vrf;
+    VRFv2Consumer vrf;
 
     enum Side {
         Biden,
@@ -50,7 +50,7 @@ contract SquidBetFinalRound is CustomAdmin, ReentrancyGuard {
     constructor(
         address _prizePool,
         ISquidBetForthRound _tokenContract,
-        VRFv2SubscriptionManager _vrf
+        VRFv2Consumer _vrf
     ) {
         prizePool = _prizePool;
         tokenContract = _tokenContract;

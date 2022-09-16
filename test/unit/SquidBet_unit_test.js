@@ -26,12 +26,8 @@ let addr10
 describe('SquidBets', function () {
   beforeEach(async function () {
     //////////////////////////////////get contract Factory ///////////////////////////////////////////
-    const VRFCoordinatorV2Mock = await ethers.getContractFactory(
-      'VRFCoordinatorV2Mock',
-    )
-    const LinkToken = await ethers.getContractFactory('LinkToken')
-    const VRFv2SubscriptionManager = await ethers.getContractFactory(
-      'VRFv2SubscriptionManager',
+    const VRFv2Consumer = await ethers.getContractFactory(
+      'VRFv2Consumer',
     )
     const SquidBetPlayersRegistration = await ethers.getContractFactory(
       'SquidBetPlayersRegistration',
@@ -73,9 +69,8 @@ describe('SquidBets', function () {
       PrizePool,
     ] = await ethers.getSigners()
     // Chainlink VRF
-    this.vrfCondinator = await VRFCoordinatorV2Mock.deploy(BASE_FEE, GAS_PRICE_LINK)
     this.linkToken = await LinkToken.deploy()
-    this.vrf = await VRFv2SubscriptionManager.deploy(
+    this.vrf = await VRFv2Consumer.deploy(
       this.vrfCondinator.address,
       this.linkToken.address,
       '0xd89b2bf150e3b9e13446986e571fb9cab24b13cea0a43ea20a6049a85cc807cc',

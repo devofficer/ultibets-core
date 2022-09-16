@@ -1,12 +1,12 @@
 const { expect } = require('chai')
 const { ethers } = require('hardhat')
 const { loadFixture } = require('@nomicfoundation/hardhat-network-helpers')
-const { getRevertMessage } = require('../utils/test-helper')
+const { getRevertMessage } = require('../../utils/helpers')
 
-describe('UltiBetsERC20 contract', function () {
+describe('UltiBetsToken contract', function () {
   async function deployTokenFixture() {
     // Get the ContractFactory and Signers here.
-    const Token = await ethers.getContractFactory('UltiBetsERC20')
+    const Token = await ethers.getContractFactory('UltiBetsToken')
     const [owner, addr1, addr2] = await ethers.getSigners()
 
     const hardhatToken = await Token.deploy()
@@ -58,14 +58,6 @@ describe('UltiBetsERC20 contract', function () {
     // Owner balance shouldn't have changed.
     expect(await hardhatToken.balanceOf(owner.address)).to.equal(
       initialOwnerBalance,
-    )
-  })
-
-  it('Cannot transfer if the token is paused', async function () {
-    const { hardhatToken, addr1 } = await loadFixture(deployTokenFixture)
-    await hardhatToken.pause()
-    await expect(hardhatToken.transfer(addr1.address, 10)).to.be.revertedWith(
-      getRevertMessage('Pausable: paused'),
     )
   })
 })

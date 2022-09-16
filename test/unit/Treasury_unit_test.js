@@ -7,9 +7,9 @@ describe("Treasury", async function () {
   beforeEach(async function () {
     [admin, user1, user2] = await ethers.getSigners();
 
-    const TokenFactory = await ethers.getContractFactory("UltiBetsERC20");
+    const TokenFactory = await ethers.getContractFactory("UltiBetsToken");
     this.token = await TokenFactory.deploy();
-    const TreasuryFactory = await ethers.getContractFactory("UltibetsTreasury");
+    const TreasuryFactory = await ethers.getContractFactory("UltiBetsTreasury");
     this.treasury = await TreasuryFactory.deploy([admin.address], 1, this.token.address);
     await this.treasury.deployed();
   });
