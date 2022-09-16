@@ -7,7 +7,7 @@ import "../library/frequencyHelper.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
-contract UltibetsTreasury is MultiSigWallet, ReentrancyGuard {
+contract UltiBetsTreasury is MultiSigWallet, ReentrancyGuard {
     address public immutable Admin;
     //uint256 public MonthlySalary = 1000000000000000000; // 1 ETH/FTM/AVAX ETC...
     mapping(address => Allocation) internal allocations;

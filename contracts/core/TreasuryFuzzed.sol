@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "../library/frequencyHelper.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import "./UltiBetsERC20.sol";
+import "./UltiBetsToken.sol";
 
 contract TreasuryFuzzed is ReentrancyGuard {
     address public immutable Admin;
@@ -25,7 +25,7 @@ contract TreasuryFuzzed is ReentrancyGuard {
 
     constructor() {
         Admin = msg.sender;
-        fundingCoin = new UltiBetsERC20();
+        fundingCoin = new UltiBetsToken();
         withdrawalFrequency = 1;
     }
 
