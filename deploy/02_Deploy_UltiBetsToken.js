@@ -23,4 +23,4 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
   log('----------------------------------------------------')
 }
 
-module.exports.tags = ['all', 'UltiBetsToken']
+module.exports.tags = ['all', 'token']
