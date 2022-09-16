@@ -6,7 +6,7 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
   const { deploy, log } = deployments
   const { deployer } = await getNamedAccounts()
 
-  const VRFv2Consumer = await deploy('UltiBetsERC20', {
+  const UltiBetsToken = await deploy('UltiBetsToken', {
     from: deployer,
     log: true,
     waitConfirmations: getWaitBlockConfirmations(network.name),
@@ -17,10 +17,10 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     process.env.ETHERSCAN_API_KEY
   ) {
     log('Verifying...')
-    await verify(VRFv2Consumer.address)
+    await verify(UltiBetsToken.address)
   }
 
   log('----------------------------------------------------')
 }
 
-module.exports.tags = ['all', 'vrf']
+module.exports.tags = ['all', 'UltiBetsToken']

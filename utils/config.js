@@ -18,7 +18,8 @@ const networkConfig = {
     vrfCoordinator: "0x6168499c0cFfCaCD319c818142124B7A15E857ab",
     oracle: "0xc57b33452b4f7bb189bb5afae9cc4aba1f7a4fd8",
     fee: "100000000000000000",
-    fundAmount: "100000000000000000", // 0.1
+    fundAmount: "100000000000000000", // 0.1,
+    fundToken: '0xeb8f08a975ab53e34d8a0330e0d34de942c95926' 
   },
   137: {
     name: "polygon",
@@ -28,6 +29,7 @@ const networkConfig = {
     oracle: "0x0a31078cd57d23bf9e8e8f1ba78356ca2090569e",
     fee: "100000000000000",
     fundAmount: "100000000000000",
+    fundToken: ''
   },
 }
 
