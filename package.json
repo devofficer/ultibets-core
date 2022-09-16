@@ -1,5 +1,6 @@
 {
   "name": "hardhat-project",
+  "license": "MIT",
   "devDependencies": {
     "@nomicfoundation/hardhat-network-helpers": "^1.0.6",
     "@nomiclabs/hardhat-ethers": "npm:hardhat-deploy-ethers",
@@ -10,6 +11,7 @@
     "ethereum-waffle": "^3.4.4",
     "ethers": "^5.7.1",
     "hardhat": "^2.9.3",
+    "hardhat-deploy": "^0.11.15",
     "prettier": "^2.7.1",
     "prettier-plugin-solidity": "^1.0.0-beta.24",
     "solhint": "^3.3.7",
@@ -18,16 +20,15 @@
   "dependencies": {
     "@chainlink/contracts": "^0.4.1",
     "@chainlink/token": "^1.1.0",
-    "@openzeppelin/contracts": "^4.5.0",
-    "hardhat-deploy": "^0.11.15"
+    "@openzeppelin/contracts": "^4.5.0"
   },
   "scripts": {
     "compile": "hardhat compile",
     "deploy": "hardhat deploy",
     "test": "hardhat test test/unit/*_test.js --network hardhat",
     "test-staging": "hardhat test test/staging/*_test.js --network rinkeby",
-    "lint": "solhint \"contracts/*.so \"",
-    "lint:fix": "solhint \"contracts/**/*.so \" --fix",
+    "lint": "solhint \"contracts/*.sol\"",
+    "lint:fix": "solhint \"contracts/**/*.sol\" --fix",
     "format": "prettier --write .",
     "coverage": "hardhat coverage --solcoverjs ./.solcover.js"
   }

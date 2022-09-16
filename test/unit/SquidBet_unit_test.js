@@ -1,515 +1,238 @@
 const { expect } = require('chai')
-const { ethers } = require('hardhat')
+const { deployments, ethers } = require('hardhat')
 
-/**
- * @dev Read more at https://docs.chain.link/docs/chainlink-vrf/
- */
- const BASE_FEE = "100000000000000000"
- const GAS_PRICE_LINK = "1000000000" // 0.000000001 LINK per gas
+describe('SquidBet Contracts', function () {
+  let vrfConsumer,
+    oracle,
+    squidBetRegistration,
+    squidBetStartRound,
+    squidBetSecondRound,
+    squidBetThirdRound,
+    squidBetForthRound,
+    squidBetFinalRound
+  let owner, addr1, addr2, addr3, addr4, addr5, addr6
 
-
-let Admin
-let PrizePool
-let Treasury
-let oracle
-let addr1
-let addr2
-let addr3
-let addr4
-let addr5
-let addr6
-let addr7
-let addr8
-let addr9
-let addr10
-
-describe('SquidBets', function () {
   beforeEach(async function () {
-    //////////////////////////////////get contract Factory ///////////////////////////////////////////
-    const VRFv2Consumer = await ethers.getContractFactory(
-      'VRFv2Consumer',
-    )
-    const SquidBetPlayersRegistration = await ethers.getContractFactory(
-      'SquidBetPlayersRegistration',
-    )
-    const SquidBetStartRound = await ethers.getContractFactory(
-      'SquidBetStartRound',
-    )
-    const SquidBetSecondRound = await ethers.getContractFactory(
-      'SquidBetSecondRound',
-    )
-    const SquidBetThirdRound = await ethers.getContractFactory(
-      'SquidBetThirdRound',
-    )
-    const SquidBetForthRound = await ethers.getContractFactory(
-      'SquidBetForthRound',
-    )
-    const SquidBetFinalRound = await ethers.getContractFactory(
-      'SquidBetFinalRound',
-    )
-    const SquidBetPrizePool = await ethers.getContractFactory(
-      'SquidBetPrizePool',
-    )
-
-    ////////////////////////////////////////////////////////////// deploy////////////////////////////
+    await deployments.fixture(['mocks', 'vrf', 'squid_bet'])
     ;[
-      Admin,
-      oracle,
+      owner,
       addr1,
       addr2,
       addr3,
       addr4,
       addr5,
       addr6,
-      addr7,
-      addr8,
-      addr9,
-      addr10,
-      Treasury,
-      PrizePool,
     ] = await ethers.getSigners()
-    // Chainlink VRF
-    this.linkToken = await LinkToken.deploy()
-    this.vrf = await VRFv2Consumer.deploy(
-      this.vrfCondinator.address,
-      this.linkToken.address,
-      '0xd89b2bf150e3b9e13446986e571fb9cab24b13cea0a43ea20a6049a85cc807cc',
-    )
+    oracle = await ethers.getContract('MockOracle')
+    vrfConsumer = await ethers.getContract('VRFv2Consumer')
+    squidBetRegistration = await ethers.getContract('SquidBetRegistration')
+    squidBetStartRound = await ethers.getContract('SquidBetStartRound')
+    squidBetSecondRound = await ethers.getContract('SquidBetSecondRound')
+    squidBetThirdRound = await ethers.getContract('SquidBetThirdRound')
+    squidBetForthRound = await ethers.getContract('SquidBetForthRound')
+    squidBetFinalRound = await ethers.getContract('SquidBetFinalRound')
 
-    //player registration
-    this.squidBetPlayersRegistration = await SquidBetPlayersRegistration.deploy(
-      Treasury.address,
-      PrizePool.address,
-    )
-    ///start round
-    this.squidBetStartRound = await SquidBetStartRound.deploy(
-      PrizePool.address,
-      this.squidBetPlayersRegistration.address,
-    )
-    ///second round
-    this.squidBetSecondRound = await SquidBetSecondRound.deploy(
-      PrizePool.address,
-      this.squidBetStartRound.address,
-    )
-    /// third round
-
-    this.squidBetThirdRound = await SquidBetThirdRound.deploy(
-      PrizePool.address,
-      this.squidBetSecondRound.address,
-    )
-
-    ///// Forth round
-
-    this.squidBetForthRound = await SquidBetForthRound.deploy(
-      PrizePool.address,
-      this.squidBetThirdRound.address,
-    )
-
-    ///// Final Round ///
-
-    this.squidBetFinalRound = await SquidBetFinalRound.deploy(
-      PrizePool.address,
-      this.squidBetForthRound.address,
-      this.vrf.address,
-    )
-
-    this.squidBetPrizePool = await SquidBetPrizePool.deploy(Treasury.address)
-
-    //console.log( this.squidBetSecondRound.address,  this.squidBetThirdRound.address )
-
-    /////////////////deployed////////////////////////////////////////////
-
-    await this.vrf.deployed()
-    await this.squidBetPlayersRegistration.deployed()
-    await this.squidBetStartRound.deployed()
-    await this.squidBetSecondRound.deployed()
-    await this.squidBetThirdRound.deployed()
-    await this.squidBetForthRound.deployed()
-    await this.squidBetFinalRound.deployed()
-    await this.squidBetPrizePool.deployed()
-
-    await this.vrf.connect(Admin).addOracle(oracle.address)
-    await this.squidBetPlayersRegistration
-      .connect(Admin)
-      .addOracle(oracle.address)
-    await this.squidBetStartRound.connect(Admin).addOracle(oracle.address)
-    await this.squidBetSecondRound.connect(Admin).addOracle(oracle.address)
-    await this.squidBetThirdRound.connect(Admin).addOracle(oracle.address)
-    await this.squidBetForthRound.connect(Admin).addOracle(oracle.address)
-    await this.squidBetFinalRound.connect(Admin).addOracle(oracle.address)
-
-    let tx = {
-      to: this.squidBetPrizePool.address,
-      // Convert currency unit from ether to wei
-      value: ethers.utils.parseEther('10'),
-    }
-
-    await addr1.sendTransaction(tx)
+    await squidBetRegistration.addOracle(oracle.address)
+    await squidBetStartRound.addOracle(oracle.address)
+    await squidBetSecondRound.addOracle(oracle.address)
+    await squidBetThirdRound.addOracle(oracle.address)
+    await squidBetForthRound.addOracle(oracle.address)
+    await squidBetFinalRound.addOracle(oracle.address)
   })
 
-  it('it does basic checks', async function () {
-    await this.squidBetPlayersRegistration
-      .connect(addr1)
-      .registerPlayer({ value: ethers.utils.parseEther('1.0') })
-    await this.squidBetPlayersRegistration
-      .connect(addr2)
-      .registerPlayer({ value: ethers.utils.parseEther('1.0') })
-    await this.squidBetPlayersRegistration
-      .connect(addr3)
-      .registerPlayer({ value: ethers.utils.parseEther('1.0') })
-    await this.squidBetPlayersRegistration
-      .connect(addr4)
-      .registerPlayer({ value: ethers.utils.parseEther('1.0') })
-    await this.squidBetPlayersRegistration
-      .connect(addr5)
-      .registerPlayer({ value: ethers.utils.parseEther('1.0') })
-    // await this.squidBetPlayersRegistration.connect(addr6).registerPlayer({value: ethers.utils.parseEther("1.0")});
-    // await this.squidBetPlayersRegistration.connect(addr7).registerPlayer({value: ethers.utils.parseEther("1.0")});
-    // await this.squidBetPlayersRegistration.connect(addr8).registerPlayer({value: ethers.utils.parseEther("1.0")});
-    // await this.squidBetPlayersRegistration.connect(addr9).registerPlayer({value: ethers.utils.parseEther("1.0")});
-    // await this.squidBetPlayersRegistration.connect(addr10).registerPlayer({value: ethers.utils.parseEther("1.0")});
+  it('does basic checks', async function () {
+    const regTxParams = { value: ethers.utils.parseEther('1.0') }
+    await squidBetRegistration.connect(addr1).registerPlayer(regTxParams)
+    await squidBetRegistration.connect(addr2).registerPlayer(regTxParams)
+    await squidBetRegistration.connect(addr3).registerPlayer(regTxParams)
+    await squidBetRegistration.connect(addr4).registerPlayer(regTxParams)
+    await squidBetRegistration.connect(addr5).registerPlayer(regTxParams)
 
-    expect(await this.squidBetPlayersRegistration.totalPlayerNumber()).to.equal(
-      '5',
-    )
-    expect(
-      await this.squidBetPlayersRegistration.getRegisterPlayerCount(),
-    ).to.equal('5')
-    expect(await this.squidBetPlayersRegistration.getBalance()).to.equal(
+    expect(await squidBetRegistration.totalPlayerNumber()).to.equal('5')
+    expect(await squidBetRegistration.getRegisterPlayerCount()).to.equal('5')
+    expect(await squidBetRegistration.getBalance()).to.equal(
       ethers.utils.parseEther('4.5'),
     )
     expect(
-      await this.squidBetPlayersRegistration.getIsRegisteredPlayer(
-        addr1.address,
-      ),
+      await squidBetRegistration.getIsRegisteredPlayer(addr1.address),
     ).to.equal(true)
     expect(
-      await this.squidBetPlayersRegistration.getIsRegisteredPlayer(
-        addr2.address,
-      ),
+      await squidBetRegistration.getIsRegisteredPlayer(addr2.address),
     ).to.equal(true)
     expect(
-      await this.squidBetPlayersRegistration.getIsRegisteredPlayer(
-        addr3.address,
-      ),
+      await squidBetRegistration.getIsRegisteredPlayer(addr3.address),
     ).to.equal(true)
     expect(
-      await this.squidBetPlayersRegistration.getIsRegisteredPlayer(
-        addr4.address,
-      ),
+      await squidBetRegistration.getIsRegisteredPlayer(addr4.address),
     ).to.equal(true)
     expect(
-      await this.squidBetPlayersRegistration.getIsRegisteredPlayer(
-        addr5.address,
-      ),
+      await squidBetRegistration.getIsRegisteredPlayer(addr5.address),
     ).to.equal(true)
   })
 
   it('check if registered players are inherited across contract', async function () {
-    await this.squidBetPlayersRegistration
-      .connect(addr1)
-      .registerPlayer({ value: ethers.utils.parseEther('1.0') })
-    await this.squidBetPlayersRegistration
-      .connect(addr2)
-      .registerPlayer({ value: ethers.utils.parseEther('1.0') })
-    await this.squidBetPlayersRegistration
-      .connect(addr3)
-      .registerPlayer({ value: ethers.utils.parseEther('1.0') })
-    await this.squidBetPlayersRegistration
-      .connect(addr4)
-      .registerPlayer({ value: ethers.utils.parseEther('1.0') })
-    await this.squidBetPlayersRegistration
-      .connect(addr5)
-      .registerPlayer({ value: ethers.utils.parseEther('1.0') })
+    const regTxParams = { value: ethers.utils.parseEther('1.0') }
+    await squidBetRegistration.connect(addr1).registerPlayer(regTxParams)
+    await squidBetRegistration.connect(addr2).registerPlayer(regTxParams)
+    await squidBetRegistration.connect(addr3).registerPlayer(regTxParams)
+    await squidBetRegistration.connect(addr4).registerPlayer(regTxParams)
+    await squidBetRegistration.connect(addr5).registerPlayer(regTxParams)
 
-    await this.squidBetStartRound
-      .connect(addr1)
-      .placeBet('1', { value: ethers.utils.parseEther('5.0') })
-    await this.squidBetStartRound
-      .connect(addr2)
-      .placeBet('1', { value: ethers.utils.parseEther('5.0') })
-    await this.squidBetStartRound
-      .connect(addr3)
-      .placeBet('1', { value: ethers.utils.parseEther('5.0') })
-    await this.squidBetStartRound
-      .connect(addr4)
-      .placeBet('1', { value: ethers.utils.parseEther('5.0') })
-    await this.squidBetStartRound
-      .connect(addr5)
-      .placeBet('0', { value: ethers.utils.parseEther('5.0') })
+    //// start round ////
+    const placeBetParams = { value: ethers.utils.parseEther('5.0') }
+    await squidBetStartRound.connect(addr1).placeBet('1', placeBetParams)
+    await squidBetStartRound.connect(addr2).placeBet('1', placeBetParams)
+    await squidBetStartRound.connect(addr3).placeBet('1', placeBetParams)
+    await squidBetStartRound.connect(addr4).placeBet('1', placeBetParams)
+    await squidBetStartRound.connect(addr5).placeBet('0', placeBetParams)
     await expect(
-      this.squidBetStartRound
-        .connect(addr6)
-        .placeBet('1', { value: ethers.utils.parseEther('5.0') }),
+      squidBetStartRound.connect(addr6).placeBet('1', placeBetParams),
     ).to.be.revertedWith('revert')
 
-    await this.squidBetStartRound.connect(Admin).stopBet()
+    await squidBetStartRound.stopBet()
     await expect(
-      this.squidBetStartRound.connect(addr1).stopBet(),
+      squidBetStartRound.connect(addr1).stopBet(),
     ).to.be.revertedWith('Only Admin and Owner can perform this function')
 
-    await this.squidBetStartRound.connect(oracle).reportResult('1', '0')
+    await squidBetStartRound.connect(oracle).reportResult('1', '0')
     await expect(
-      this.squidBetStartRound.connect(addr1).reportResult('1', '0'),
+      squidBetStartRound.connect(addr1).reportResult('1', '0'),
     ).to.be.revertedWith('Only Oracle and Owner can perform this function')
 
-    expect(await this.squidBetStartRound.getwinners(addr1.address)).to.equal(
-      true,
-    )
-    expect(await this.squidBetStartRound.getwinners(addr2.address)).to.equal(
-      true,
-    )
-    expect(await this.squidBetStartRound.getwinners(addr3.address)).to.equal(
-      true,
-    )
-    expect(await this.squidBetStartRound.getwinners(addr4.address)).to.equal(
-      true,
-    )
-    expect(await this.squidBetStartRound.getwinners(addr5.address)).to.equal(
-      false,
-    )
+    expect(await squidBetStartRound.getwinners(addr1.address)).to.equal(true)
+    expect(await squidBetStartRound.getwinners(addr2.address)).to.equal(true)
+    expect(await squidBetStartRound.getwinners(addr3.address)).to.equal(true)
+    expect(await squidBetStartRound.getwinners(addr4.address)).to.equal(true)
+    expect(await squidBetStartRound.getwinners(addr5.address)).to.equal(false)
 
-    ///second
-
-    await this.squidBetSecondRound
-      .connect(addr1)
-      .placeBet('0', { value: ethers.utils.parseEther('5.0') })
-    await this.squidBetSecondRound
-      .connect(addr2)
-      .placeBet('0', { value: ethers.utils.parseEther('5.0') })
-    await this.squidBetSecondRound
-      .connect(addr3)
-      .placeBet('0', { value: ethers.utils.parseEther('5.0') })
-    await this.squidBetSecondRound
-      .connect(addr4)
-      .placeBet('1', { value: ethers.utils.parseEther('5.0') })
+    //// second round ////
+    await squidBetSecondRound.connect(addr1).placeBet('0', placeBetParams)
+    await squidBetSecondRound.connect(addr2).placeBet('0', placeBetParams)
+    await squidBetSecondRound.connect(addr3).placeBet('0', placeBetParams)
+    await squidBetSecondRound.connect(addr4).placeBet('1', placeBetParams)
     await expect(
-      this.squidBetSecondRound
-        .connect(addr5)
-        .placeBet('1', { value: ethers.utils.parseEther('5.0') }),
+      squidBetSecondRound.connect(addr5).placeBet('1', placeBetParams),
     ).to.be.revertedWith('Not a valid player')
 
-    await this.squidBetSecondRound.connect(Admin).stopBet()
-    await this.squidBetSecondRound.connect(oracle).reportResult('0', '1')
+    await squidBetSecondRound.stopBet()
+    await squidBetSecondRound.connect(oracle).reportResult('0', '1')
 
-    expect(await this.squidBetSecondRound.getwinners(addr1.address)).to.equal(
-      true,
-    )
-    expect(await this.squidBetSecondRound.getwinners(addr2.address)).to.equal(
-      true,
-    )
-    expect(await this.squidBetSecondRound.getwinners(addr3.address)).to.equal(
-      true,
-    )
-    expect(await this.squidBetSecondRound.getwinners(addr4.address)).to.equal(
-      false,
-    )
+    expect(await squidBetSecondRound.getwinners(addr1.address)).to.equal(true)
+    expect(await squidBetSecondRound.getwinners(addr2.address)).to.equal(true)
+    expect(await squidBetSecondRound.getwinners(addr3.address)).to.equal(true)
+    expect(await squidBetSecondRound.getwinners(addr4.address)).to.equal(false)
 
-    ///////// third round////
-    await this.squidBetThirdRound
-      .connect(addr1)
-      .placeBet('0', { value: ethers.utils.parseEther('5.0') })
-    await this.squidBetThirdRound
-      .connect(addr2)
-      .placeBet('0', { value: ethers.utils.parseEther('5.0') })
-    await this.squidBetThirdRound
-      .connect(addr3)
-      .placeBet('1', { value: ethers.utils.parseEther('5.0') })
+    //// third round ////
+    await squidBetThirdRound.connect(addr1).placeBet('0', placeBetParams)
+    await squidBetThirdRound.connect(addr2).placeBet('0', placeBetParams)
+    await squidBetThirdRound.connect(addr3).placeBet('1', placeBetParams)
     await expect(
-      this.squidBetThirdRound
-        .connect(addr4)
-        .placeBet('1', { value: ethers.utils.parseEther('5.0') }),
+      squidBetThirdRound.connect(addr4).placeBet('1', placeBetParams),
     ).to.be.revertedWith('Not a valid player')
 
-    await this.squidBetThirdRound.connect(Admin).stopBet()
-    await this.squidBetThirdRound.connect(oracle).reportResult('0', '1')
+    await squidBetThirdRound.stopBet()
+    await squidBetThirdRound.connect(oracle).reportResult('0', '1')
 
-    expect(await this.squidBetThirdRound.getwinners(addr1.address)).to.equal(
-      true,
-    )
-    expect(await this.squidBetThirdRound.getwinners(addr2.address)).to.equal(
-      true,
-    )
-    expect(await this.squidBetThirdRound.getwinners(addr3.address)).to.equal(
-      false,
-    )
+    expect(await squidBetThirdRound.getwinners(addr1.address)).to.equal(true)
+    expect(await squidBetThirdRound.getwinners(addr2.address)).to.equal(true)
+    expect(await squidBetThirdRound.getwinners(addr3.address)).to.equal(false)
 
-    ////Forth Round////
-
-    await this.squidBetForthRound
-      .connect(addr1)
-      .placeBet('0', { value: ethers.utils.parseEther('5.0') })
-    await this.squidBetForthRound
-      .connect(addr2)
-      .placeBet('0', { value: ethers.utils.parseEther('5.0') })
+    //// Forth Round ////
+    await squidBetForthRound.connect(addr1).placeBet('0', placeBetParams)
+    await squidBetForthRound.connect(addr2).placeBet('0', placeBetParams)
     await expect(
-      this.squidBetForthRound
-        .connect(addr3)
-        .placeBet('1', { value: ethers.utils.parseEther('5.0') }),
+      squidBetForthRound.connect(addr3).placeBet('1', placeBetParams),
     ).to.be.revertedWith('Not a valid player')
 
-    await this.squidBetForthRound.connect(Admin).stopBet()
-    await this.squidBetForthRound.connect(oracle).reportResult('0', '1')
+    await squidBetForthRound.stopBet()
+    await squidBetForthRound.connect(oracle).reportResult('0', '1')
 
-    expect(await this.squidBetForthRound.getwinners(addr1.address)).to.equal(
-      true,
-    )
-    expect(await this.squidBetForthRound.getwinners(addr2.address)).to.equal(
-      true,
-    )
+    expect(await squidBetForthRound.getwinners(addr1.address)).to.equal(true)
+    expect(await squidBetForthRound.getwinners(addr2.address)).to.equal(true)
 
-    ////Final Round ////
+    //// Final Round ////
+    await squidBetFinalRound.connect(addr1).placeBet('0', placeBetParams)
+    await squidBetFinalRound.connect(addr2).placeBet('0', placeBetParams)
 
-    await this.squidBetFinalRound
-      .connect(addr1)
-      .placeBet('0', { value: ethers.utils.parseEther('5.0') })
-    await this.squidBetFinalRound
-      .connect(addr2)
-      .placeBet('0', { value: ethers.utils.parseEther('5.0') })
-
-    await this.squidBetFinalRound.stopBet()
-    await this.squidBetFinalRound.connect(oracle).reportResult(0, 1)
+    await squidBetFinalRound.stopBet()
+    await squidBetFinalRound.connect(oracle).reportResult(0, 1)
   })
 
-  it('SquidBets round cannot place bets twice', async function () {
-    await this.squidBetPlayersRegistration
-      .connect(addr1)
-      .registerPlayer({ value: ethers.utils.parseEther('1.0') })
-    await this.squidBetPlayersRegistration
-      .connect(addr2)
-      .registerPlayer({ value: ethers.utils.parseEther('1.0') })
+  it('Cannot place bets twice', async function () {
+    const regParams = { value: ethers.utils.parseEther('1.0') }
+    await squidBetRegistration.connect(addr1).registerPlayer(regParams)
+    await squidBetRegistration.connect(addr2).registerPlayer(regParams)
 
-    await this.squidBetStartRound
-      .connect(addr1)
-      .placeBet('1', { value: ethers.utils.parseEther('5.0') })
+    const betParams = { value: ethers.utils.parseEther('5.0') }
+    await squidBetStartRound.connect(addr1).placeBet('1', betParams)
     await expect(
-      this.squidBetStartRound
-        .connect(addr1)
-        .placeBet('1', { value: ethers.utils.parseEther('5.0') }),
+      squidBetStartRound.connect(addr1).placeBet('1', betParams),
     ).to.be.revertedWith('Bet placed already')
   })
 
   it('SquidBets final round vote tie', async function () {
-    let currVote = await this.squidBetFinalRound.vote()
+    let currVote = await squidBetFinalRound.vote()
 
     expect(currVote).to.eq(0)
 
-    await this.squidBetPlayersRegistration
-      .connect(addr1)
-      .registerPlayer({ value: ethers.utils.parseEther('1.0') })
-    await this.squidBetPlayersRegistration
-      .connect(addr2)
-      .registerPlayer({ value: ethers.utils.parseEther('1.0') })
+    const regParams = { value: ethers.utils.parseEther('1.0') }
+    await squidBetRegistration.connect(addr1).registerPlayer(regParams)
+    await squidBetRegistration.connect(addr2).registerPlayer(regParams)
 
-    await this.squidBetStartRound
-      .connect(addr1)
-      .placeBet('1', { value: ethers.utils.parseEther('5.0') })
-    await this.squidBetStartRound
-      .connect(addr2)
-      .placeBet('1', { value: ethers.utils.parseEther('5.0') })
+    //// first round ////
+    const betParams = { value: ethers.utils.parseEther('5.0') }
+    await squidBetStartRound.connect(addr1).placeBet('1', betParams)
+    await squidBetStartRound.connect(addr2).placeBet('1', betParams)
+    await squidBetStartRound.stopBet()
+    await squidBetStartRound.connect(oracle).reportResult('1', '0')
+    expect(await squidBetStartRound.getwinners(addr1.address)).to.equal(true)
+    expect(await squidBetStartRound.getwinners(addr2.address)).to.equal(true)
 
-    await this.squidBetStartRound.connect(Admin).stopBet()
-    await expect(
-      this.squidBetStartRound.connect(addr1).stopBet(),
-    ).to.be.revertedWith('Only Admin and Owner can perform this function')
+    //// second round ////
+    await squidBetSecondRound.connect(addr1).placeBet('0', betParams)
+    await squidBetSecondRound.connect(addr2).placeBet('0', betParams)
+    await squidBetSecondRound.stopBet()
+    await squidBetSecondRound.connect(oracle).reportResult('0', '1')
+    expect(await squidBetSecondRound.getwinners(addr1.address)).to.equal(true)
+    expect(await squidBetSecondRound.getwinners(addr2.address)).to.equal(true)
 
-    await this.squidBetStartRound.connect(oracle).reportResult('1', '0')
-    await expect(
-      this.squidBetStartRound.connect(addr1).reportResult('1', '0'),
-    ).to.be.revertedWith('Only Oracle and Owner can perform this function')
+    //// third round ////
+    await squidBetThirdRound.connect(addr1).placeBet('0', betParams)
+    await squidBetThirdRound.connect(addr2).placeBet('0', betParams)
+    await squidBetThirdRound.stopBet()
+    await squidBetThirdRound.connect(oracle).reportResult('0', '1')
+    expect(await squidBetThirdRound.getwinners(addr1.address)).to.equal(true)
+    expect(await squidBetThirdRound.getwinners(addr2.address)).to.equal(true)
 
-    expect(await this.squidBetStartRound.getwinners(addr1.address)).to.equal(
-      true,
-    )
-    expect(await this.squidBetStartRound.getwinners(addr2.address)).to.equal(
-      true,
-    )
+    //// forth Round ////
+    await squidBetForthRound.connect(addr1).placeBet('0', betParams)
+    await squidBetForthRound.connect(addr2).placeBet('0', betParams)
+    await squidBetForthRound.stopBet()
+    await squidBetForthRound.connect(oracle).reportResult('0', '1')
+    expect(await squidBetForthRound.getwinners(addr1.address)).to.equal(true)
+    expect(await squidBetForthRound.getwinners(addr2.address)).to.equal(true)
 
-    ///second
+    //// final round ////
+    await squidBetFinalRound.connect(addr1).placeBet('0', betParams)
+    await squidBetFinalRound.connect(addr2).placeBet('0', betParams)
+    await squidBetFinalRound.stopBet()
+    await squidBetFinalRound.connect(oracle).reportResult(0, 1)
+    expect(await squidBetForthRound.getwinners(addr1.address)).to.equal(true)
+    expect(await squidBetForthRound.getwinners(addr2.address)).to.equal(true)
 
-    await this.squidBetSecondRound
-      .connect(addr1)
-      .placeBet('0', { value: ethers.utils.parseEther('5.0') })
-    await this.squidBetSecondRound
-      .connect(addr2)
-      .placeBet('0', { value: ethers.utils.parseEther('5.0') })
-    await expect(
-      this.squidBetSecondRound
-        .connect(addr5)
-        .placeBet('1', { value: ethers.utils.parseEther('5.0') }),
-    ).to.be.revertedWith('Not a valid player')
-
-    await this.squidBetSecondRound.connect(Admin).stopBet()
-    await this.squidBetSecondRound.connect(oracle).reportResult('0', '1')
-
-    expect(await this.squidBetSecondRound.getwinners(addr1.address)).to.equal(
-      true,
-    )
-    expect(await this.squidBetSecondRound.getwinners(addr2.address)).to.equal(
-      true,
-    )
-
-    ///////// third round////
-    await this.squidBetThirdRound
-      .connect(addr1)
-      .placeBet('0', { value: ethers.utils.parseEther('5.0') })
-    await this.squidBetThirdRound
-      .connect(addr2)
-      .placeBet('0', { value: ethers.utils.parseEther('5.0') })
-
-    await this.squidBetThirdRound.connect(Admin).stopBet()
-    await this.squidBetThirdRound.connect(oracle).reportResult('0', '1')
-
-    expect(await this.squidBetThirdRound.getwinners(addr1.address)).to.equal(
-      true,
-    )
-    expect(await this.squidBetThirdRound.getwinners(addr2.address)).to.equal(
-      true,
-    )
-
-    ////Forth Round////
-
-    await this.squidBetForthRound
-      .connect(addr1)
-      .placeBet('0', { value: ethers.utils.parseEther('5.0') })
-    await this.squidBetForthRound
-      .connect(addr2)
-      .placeBet('0', { value: ethers.utils.parseEther('5.0') })
-
-    await this.squidBetForthRound.connect(Admin).stopBet()
-    await this.squidBetForthRound.connect(oracle).reportResult('0', '1')
-
-    expect(await this.squidBetForthRound.getwinners(addr1.address)).to.equal(
-      true,
-    )
-    expect(await this.squidBetForthRound.getwinners(addr2.address)).to.equal(
-      true,
-    )
-
-    await this.squidBetFinalRound
-      .connect(addr1)
-      .placeBet('0', { value: ethers.utils.parseEther('5.0') })
-    await this.squidBetFinalRound
-      .connect(addr2)
-      .placeBet('0', { value: ethers.utils.parseEther('5.0') })
-
-    await this.squidBetFinalRound.stopBet()
-    await this.squidBetFinalRound.connect(oracle).reportResult(0, 1)
-
-    await this.squidBetFinalRound.connect(addr1).Vote(1)
-
-    currVote = await this.squidBetFinalRound.vote()
+    //// voting ////
+    await squidBetFinalRound.connect(addr1).Vote(1)
+    currVote = await squidBetFinalRound.vote()
     expect(currVote).to.eq(1)
 
-    await this.squidBetFinalRound.connect(addr2).Vote(2)
-
-    currVote = await this.squidBetFinalRound.vote()
+    await squidBetFinalRound.connect(addr2).Vote(2)
+    currVote = await squidBetFinalRound.vote()
     expect(currVote).to.eq(0)
 
-    await this.squidBetFinalRound.stopVote()
-    await this.squidBetFinalRound.resultVote()
+    await squidBetFinalRound.stopVote()
+    await squidBetFinalRound.resultVote()
 
-    const res = await this.squidBetFinalRound.finalVoteDecision()
+    const res = await squidBetFinalRound.finalVoteDecision()
 
     expect(res).to.eq(
       'Random Draw will decide the only Winner of the Squid Bet Competition',
@@ -517,126 +240,110 @@ describe('SquidBets', function () {
   })
 
   it('SquidBets final round vote side 1 wins', async function () {
-    let currVote = await this.squidBetFinalRound.vote()
+    let currVote = await squidBetFinalRound.vote()
 
     expect(currVote).to.eq(0)
 
-    await this.squidBetPlayersRegistration
+    await squidBetRegistration
       .connect(addr1)
       .registerPlayer({ value: ethers.utils.parseEther('1.0') })
-    await this.squidBetPlayersRegistration
+    await squidBetRegistration
       .connect(addr2)
       .registerPlayer({ value: ethers.utils.parseEther('1.0') })
 
-    await this.squidBetStartRound
+    await squidBetStartRound
       .connect(addr1)
       .placeBet('1', { value: ethers.utils.parseEther('5.0') })
-    await this.squidBetStartRound
+    await squidBetStartRound
       .connect(addr2)
       .placeBet('1', { value: ethers.utils.parseEther('5.0') })
 
-    await this.squidBetStartRound.connect(Admin).stopBet()
+    await squidBetStartRound.stopBet()
     await expect(
-      this.squidBetStartRound.connect(addr1).stopBet(),
+      squidBetStartRound.connect(addr1).stopBet(),
     ).to.be.revertedWith('Only Admin and Owner can perform this function')
 
-    await this.squidBetStartRound.connect(oracle).reportResult('1', '0')
+    await squidBetStartRound.connect(oracle).reportResult('1', '0')
     await expect(
-      this.squidBetStartRound.connect(addr1).reportResult('1', '0'),
+      squidBetStartRound.connect(addr1).reportResult('1', '0'),
     ).to.be.revertedWith('Only Oracle and Owner can perform this function')
 
-    expect(await this.squidBetStartRound.getwinners(addr1.address)).to.equal(
-      true,
-    )
-    expect(await this.squidBetStartRound.getwinners(addr2.address)).to.equal(
-      true,
-    )
+    expect(await squidBetStartRound.getwinners(addr1.address)).to.equal(true)
+    expect(await squidBetStartRound.getwinners(addr2.address)).to.equal(true)
 
     ///second
 
-    await this.squidBetSecondRound
+    await squidBetSecondRound
       .connect(addr1)
       .placeBet('0', { value: ethers.utils.parseEther('5.0') })
-    await this.squidBetSecondRound
+    await squidBetSecondRound
       .connect(addr2)
       .placeBet('0', { value: ethers.utils.parseEther('5.0') })
     await expect(
-      this.squidBetSecondRound
+      squidBetSecondRound
         .connect(addr5)
         .placeBet('1', { value: ethers.utils.parseEther('5.0') }),
     ).to.be.revertedWith('Not a valid player')
 
-    await this.squidBetSecondRound.connect(Admin).stopBet()
-    await this.squidBetSecondRound.connect(oracle).reportResult('0', '1')
+    await squidBetSecondRound.stopBet()
+    await squidBetSecondRound.connect(oracle).reportResult('0', '1')
 
-    expect(await this.squidBetSecondRound.getwinners(addr1.address)).to.equal(
-      true,
-    )
-    expect(await this.squidBetSecondRound.getwinners(addr2.address)).to.equal(
-      true,
-    )
+    expect(await squidBetSecondRound.getwinners(addr1.address)).to.equal(true)
+    expect(await squidBetSecondRound.getwinners(addr2.address)).to.equal(true)
 
     ///////// third round////
-    await this.squidBetThirdRound
+    await squidBetThirdRound
       .connect(addr1)
       .placeBet('0', { value: ethers.utils.parseEther('5.0') })
-    await this.squidBetThirdRound
+    await squidBetThirdRound
       .connect(addr2)
       .placeBet('0', { value: ethers.utils.parseEther('5.0') })
 
-    await this.squidBetThirdRound.connect(Admin).stopBet()
-    await this.squidBetThirdRound.connect(oracle).reportResult('0', '1')
+    await squidBetThirdRound.stopBet()
+    await squidBetThirdRound.connect(oracle).reportResult('0', '1')
 
-    expect(await this.squidBetThirdRound.getwinners(addr1.address)).to.equal(
-      true,
-    )
-    expect(await this.squidBetThirdRound.getwinners(addr2.address)).to.equal(
-      true,
-    )
+    expect(await squidBetThirdRound.getwinners(addr1.address)).to.equal(true)
+    expect(await squidBetThirdRound.getwinners(addr2.address)).to.equal(true)
 
     ////Forth Round////
 
-    await this.squidBetForthRound
+    await squidBetForthRound
       .connect(addr1)
       .placeBet('0', { value: ethers.utils.parseEther('5.0') })
-    await this.squidBetForthRound
+    await squidBetForthRound
       .connect(addr2)
       .placeBet('0', { value: ethers.utils.parseEther('5.0') })
 
-    await this.squidBetForthRound.connect(Admin).stopBet()
-    await this.squidBetForthRound.connect(oracle).reportResult('0', '1')
+    await squidBetForthRound.stopBet()
+    await squidBetForthRound.connect(oracle).reportResult('0', '1')
 
-    expect(await this.squidBetForthRound.getwinners(addr1.address)).to.equal(
-      true,
-    )
-    expect(await this.squidBetForthRound.getwinners(addr2.address)).to.equal(
-      true,
-    )
+    expect(await squidBetForthRound.getwinners(addr1.address)).to.equal(true)
+    expect(await squidBetForthRound.getwinners(addr2.address)).to.equal(true)
 
-    await this.squidBetFinalRound
+    await squidBetFinalRound
       .connect(addr1)
       .placeBet('0', { value: ethers.utils.parseEther('5.0') })
-    await this.squidBetFinalRound
+    await squidBetFinalRound
       .connect(addr2)
       .placeBet('0', { value: ethers.utils.parseEther('5.0') })
 
-    await this.squidBetFinalRound.stopBet()
-    await this.squidBetFinalRound.connect(oracle).reportResult(0, 1)
+    await squidBetFinalRound.stopBet()
+    await squidBetFinalRound.connect(oracle).reportResult(0, 1)
 
-    await this.squidBetFinalRound.connect(addr1).Vote(1)
+    await squidBetFinalRound.connect(addr1).Vote(1)
 
-    currVote = await this.squidBetFinalRound.vote()
+    currVote = await squidBetFinalRound.vote()
     expect(currVote).to.eq(1)
 
-    await this.squidBetFinalRound.connect(addr2).Vote(1)
+    await squidBetFinalRound.connect(addr2).Vote(1)
 
-    currVote = await this.squidBetFinalRound.vote()
+    currVote = await squidBetFinalRound.vote()
     expect(currVote).to.eq(2)
 
-    await this.squidBetFinalRound.stopVote()
-    await this.squidBetFinalRound.resultVote()
+    await squidBetFinalRound.stopVote()
+    await squidBetFinalRound.resultVote()
 
-    const res = await this.squidBetFinalRound.finalVoteDecision()
+    const res = await squidBetFinalRound.finalVoteDecision()
 
     expect(res).to.eq(
       'Split The Prize Pool equally between every last final Players remaining in the Squid Bet Competition',
@@ -644,126 +351,110 @@ describe('SquidBets', function () {
   })
 
   it('SquidBets final round vote side 2 wins', async function () {
-    let currVote = await this.squidBetFinalRound.vote()
+    let currVote = await squidBetFinalRound.vote()
 
     expect(currVote).to.eq(0)
 
-    await this.squidBetPlayersRegistration
+    await squidBetRegistration
       .connect(addr1)
       .registerPlayer({ value: ethers.utils.parseEther('1.0') })
-    await this.squidBetPlayersRegistration
+    await squidBetRegistration
       .connect(addr2)
       .registerPlayer({ value: ethers.utils.parseEther('1.0') })
 
-    await this.squidBetStartRound
+    await squidBetStartRound
       .connect(addr1)
       .placeBet('1', { value: ethers.utils.parseEther('5.0') })
-    await this.squidBetStartRound
+    await squidBetStartRound
       .connect(addr2)
       .placeBet('1', { value: ethers.utils.parseEther('5.0') })
 
-    await this.squidBetStartRound.connect(Admin).stopBet()
+    await squidBetStartRound.stopBet()
     await expect(
-      this.squidBetStartRound.connect(addr1).stopBet(),
+      squidBetStartRound.connect(addr1).stopBet(),
     ).to.be.revertedWith('Only Admin and Owner can perform this function')
 
-    await this.squidBetStartRound.connect(oracle).reportResult('1', '0')
+    await squidBetStartRound.connect(oracle).reportResult('1', '0')
     await expect(
-      this.squidBetStartRound.connect(addr1).reportResult('1', '0'),
+      squidBetStartRound.connect(addr1).reportResult('1', '0'),
     ).to.be.revertedWith('Only Oracle and Owner can perform this function')
 
-    expect(await this.squidBetStartRound.getwinners(addr1.address)).to.equal(
-      true,
-    )
-    expect(await this.squidBetStartRound.getwinners(addr2.address)).to.equal(
-      true,
-    )
+    expect(await squidBetStartRound.getwinners(addr1.address)).to.equal(true)
+    expect(await squidBetStartRound.getwinners(addr2.address)).to.equal(true)
 
     ///second
 
-    await this.squidBetSecondRound
+    await squidBetSecondRound
       .connect(addr1)
       .placeBet('0', { value: ethers.utils.parseEther('5.0') })
-    await this.squidBetSecondRound
+    await squidBetSecondRound
       .connect(addr2)
       .placeBet('0', { value: ethers.utils.parseEther('5.0') })
     await expect(
-      this.squidBetSecondRound
+      squidBetSecondRound
         .connect(addr5)
         .placeBet('1', { value: ethers.utils.parseEther('5.0') }),
     ).to.be.revertedWith('Not a valid player')
 
-    await this.squidBetSecondRound.connect(Admin).stopBet()
-    await this.squidBetSecondRound.connect(oracle).reportResult('0', '1')
+    await squidBetSecondRound.stopBet()
+    await squidBetSecondRound.connect(oracle).reportResult('0', '1')
 
-    expect(await this.squidBetSecondRound.getwinners(addr1.address)).to.equal(
-      true,
-    )
-    expect(await this.squidBetSecondRound.getwinners(addr2.address)).to.equal(
-      true,
-    )
+    expect(await squidBetSecondRound.getwinners(addr1.address)).to.equal(true)
+    expect(await squidBetSecondRound.getwinners(addr2.address)).to.equal(true)
 
     ///////// third round////
-    await this.squidBetThirdRound
+    await squidBetThirdRound
       .connect(addr1)
       .placeBet('0', { value: ethers.utils.parseEther('5.0') })
-    await this.squidBetThirdRound
+    await squidBetThirdRound
       .connect(addr2)
       .placeBet('0', { value: ethers.utils.parseEther('5.0') })
 
-    await this.squidBetThirdRound.connect(Admin).stopBet()
-    await this.squidBetThirdRound.connect(oracle).reportResult('0', '1')
+    await squidBetThirdRound.stopBet()
+    await squidBetThirdRound.connect(oracle).reportResult('0', '1')
 
-    expect(await this.squidBetThirdRound.getwinners(addr1.address)).to.equal(
-      true,
-    )
-    expect(await this.squidBetThirdRound.getwinners(addr2.address)).to.equal(
-      true,
-    )
+    expect(await squidBetThirdRound.getwinners(addr1.address)).to.equal(true)
+    expect(await squidBetThirdRound.getwinners(addr2.address)).to.equal(true)
 
     ////Forth Round////
 
-    await this.squidBetForthRound
+    await squidBetForthRound
       .connect(addr1)
       .placeBet('0', { value: ethers.utils.parseEther('5.0') })
-    await this.squidBetForthRound
+    await squidBetForthRound
       .connect(addr2)
       .placeBet('0', { value: ethers.utils.parseEther('5.0') })
 
-    await this.squidBetForthRound.connect(Admin).stopBet()
-    await this.squidBetForthRound.connect(oracle).reportResult('0', '1')
+    await squidBetForthRound.stopBet()
+    await squidBetForthRound.connect(oracle).reportResult('0', '1')
 
-    expect(await this.squidBetForthRound.getwinners(addr1.address)).to.equal(
-      true,
-    )
-    expect(await this.squidBetForthRound.getwinners(addr2.address)).to.equal(
-      true,
-    )
+    expect(await squidBetForthRound.getwinners(addr1.address)).to.equal(true)
+    expect(await squidBetForthRound.getwinners(addr2.address)).to.equal(true)
 
-    await this.squidBetFinalRound
+    await squidBetFinalRound
       .connect(addr1)
       .placeBet('0', { value: ethers.utils.parseEther('5.0') })
-    await this.squidBetFinalRound
+    await squidBetFinalRound
       .connect(addr2)
       .placeBet('0', { value: ethers.utils.parseEther('5.0') })
 
-    await this.squidBetFinalRound.stopBet()
-    await this.squidBetFinalRound.connect(oracle).reportResult(0, 1)
+    await squidBetFinalRound.stopBet()
+    await squidBetFinalRound.connect(oracle).reportResult(0, 1)
 
-    await this.squidBetFinalRound.connect(addr1).Vote(2)
+    await squidBetFinalRound.connect(addr1).Vote(2)
 
-    currVote = await this.squidBetFinalRound.vote()
+    currVote = await squidBetFinalRound.vote()
     expect(currVote).to.eq(-1)
 
-    await this.squidBetFinalRound.connect(addr2).Vote(2)
+    await squidBetFinalRound.connect(addr2).Vote(2)
 
-    currVote = await this.squidBetFinalRound.vote()
+    currVote = await squidBetFinalRound.vote()
     expect(currVote).to.eq(-2)
 
-    await this.squidBetFinalRound.stopVote()
-    await this.squidBetFinalRound.resultVote()
+    await squidBetFinalRound.stopVote()
+    await squidBetFinalRound.resultVote()
 
-    const res = await this.squidBetFinalRound.finalVoteDecision()
+    const res = await squidBetFinalRound.finalVoteDecision()
 
     expect(res).to.eq(
       'Random Draw will decide the only Winner of the Squid Bet Competition',
@@ -771,34 +462,34 @@ describe('SquidBets', function () {
   })
 
   it("Non-winners can't vote final round", async function () {
-    let currVote = await this.squidBetFinalRound.vote()
+    let currVote = await squidBetFinalRound.vote()
 
     expect(currVote).to.eq(0)
-    await expect(
-      this.squidBetFinalRound.connect(addr1).Vote(1),
-    ).to.be.revertedWith('You do not have any winning bet')
+    await expect(squidBetFinalRound.connect(addr1).Vote(1)).to.be.revertedWith(
+      'You do not have any winning bet',
+    )
   })
 
   it('Squidbets cancel event', async function () {
-    await this.squidBetPlayersRegistration
+    await squidBetRegistration
       .connect(addr1)
       .registerPlayer({ value: ethers.utils.parseEther('1.0') })
-    await this.squidBetPlayersRegistration
+    await squidBetRegistration
       .connect(addr2)
       .registerPlayer({ value: ethers.utils.parseEther('1.0') })
 
-    await this.squidBetStartRound
+    await squidBetStartRound
       .connect(addr1)
       .placeBet('1', { value: ethers.utils.parseEther('5.0') })
-    await this.squidBetStartRound
+    await squidBetStartRound
       .connect(addr2)
       .placeBet('1', { value: ethers.utils.parseEther('5.0') })
 
-    await this.squidBetStartRound.connect(Admin).cancelEvent()
+    await squidBetStartRound.cancelEvent()
 
     const bal1Before = await ethers.provider.getBalance(addr1.address)
 
-    await this.squidBetStartRound.connect(addr1).claimBetCancelledEvent()
+    await squidBetStartRound.connect(addr1).claimBetCancelledEvent()
 
     const bal1After = await ethers.provider.getBalance(addr2.address)
 
@@ -806,7 +497,7 @@ describe('SquidBets', function () {
 
     const bal2Before = await ethers.provider.getBalance(addr1.address)
 
-    await this.squidBetStartRound.connect(addr2).claimBetCancelledEvent()
+    await squidBetStartRound.connect(addr2).claimBetCancelledEvent()
 
     const bal2After = await ethers.provider.getBalance(addr2.address)
 
@@ -814,62 +505,62 @@ describe('SquidBets', function () {
   })
 
   it("Can't claim cancelled twice", async function () {
-    await this.squidBetPlayersRegistration
+    await squidBetRegistration
       .connect(addr1)
       .registerPlayer({ value: ethers.utils.parseEther('1.0') })
-    await this.squidBetPlayersRegistration
+    await squidBetRegistration
       .connect(addr2)
       .registerPlayer({ value: ethers.utils.parseEther('1.0') })
 
-    await this.squidBetStartRound
+    await squidBetStartRound
       .connect(addr1)
       .placeBet('1', { value: ethers.utils.parseEther('5.0') })
-    await this.squidBetStartRound
+    await squidBetStartRound
       .connect(addr2)
       .placeBet('1', { value: ethers.utils.parseEther('5.0') })
 
-    await this.squidBetStartRound.connect(Admin).cancelEvent()
+    await squidBetStartRound.cancelEvent()
 
     const bal1Before = await ethers.provider.getBalance(addr1.address)
 
-    await this.squidBetStartRound.connect(addr1).claimBetCancelledEvent()
+    await squidBetStartRound.connect(addr1).claimBetCancelledEvent()
 
     const bal1After = await ethers.provider.getBalance(addr2.address)
 
     expect(bal1Before).to.lt(bal1After)
 
     await expect(
-      this.squidBetStartRound.connect(addr1).claimBetCancelledEvent(),
+      squidBetStartRound.connect(addr1).claimBetCancelledEvent(),
     ).to.be.revertedWith('You do not make any bets')
   })
 
   it("Squidbets can't report same winner", async function () {
-    await this.squidBetPlayersRegistration
+    await squidBetRegistration
       .connect(addr1)
       .registerPlayer({ value: ethers.utils.parseEther('1.0') })
-    await this.squidBetPlayersRegistration
+    await squidBetRegistration
       .connect(addr2)
       .registerPlayer({ value: ethers.utils.parseEther('1.0') })
 
-    await this.squidBetStartRound
+    await squidBetStartRound
       .connect(addr1)
       .placeBet('1', { value: ethers.utils.parseEther('5.0') })
-    await this.squidBetStartRound
+    await squidBetStartRound
       .connect(addr2)
       .placeBet('1', { value: ethers.utils.parseEther('5.0') })
 
-    await this.squidBetStartRound.connect(Admin).stopBet()
+    await squidBetStartRound.stopBet()
     await expect(
-      this.squidBetStartRound.connect(addr1).stopBet(),
+      squidBetStartRound.connect(addr1).stopBet(),
     ).to.be.revertedWith('Only Admin and Owner can perform this function')
 
     await expect(
-      this.squidBetStartRound.connect(oracle).reportResult('1', '1'),
+      squidBetStartRound.connect(oracle).reportResult('1', '1'),
     ).to.be.revertedWith('Winner and loser cannot be the same')
   })
 
   it('Squidbets prize pool withdraw single then withdraw all', async function () {
-    await this.squidBetPrizePool.addMultipleWinnersAddress([
+    await squidBetPrizePool.addMultipleWinnersAddress([
       addr1.address,
       addr2.address,
       addr3.address,
@@ -879,7 +570,7 @@ describe('SquidBets', function () {
 
     const balBefore1 = await ethers.provider.getBalance(addr1.address)
 
-    await this.squidBetPrizePool.connect(addr1).winnerClaimPrizePool()
+    await squidBetPrizePool.connect(addr1).winnerClaimPrizePool()
 
     const balAfter1 = await ethers.provider.getBalance(addr1.address)
 
@@ -888,7 +579,7 @@ describe('SquidBets', function () {
     const balBefore2 = await ethers.provider.getBalance(addr2.address)
     const balBefore3 = await ethers.provider.getBalance(addr3.address)
 
-    await this.squidBetPrizePool.winnersClaimPrizePool()
+    await squidBetPrizePool.winnersClaimPrizePool()
 
     const balAfter2 = await ethers.provider.getBalance(addr2.address)
     const balAfter3 = await ethers.provider.getBalance(addr3.address)
@@ -900,7 +591,7 @@ describe('SquidBets', function () {
   })
 
   it("Squidbets prize pool withdraw all then can't withdraw single", async function () {
-    await this.squidBetPrizePool.addMultipleWinnersAddress([
+    await squidBetPrizePool.addMultipleWinnersAddress([
       addr1.address,
       addr2.address,
       addr3.address,
@@ -914,7 +605,7 @@ describe('SquidBets', function () {
     const balBefore4 = await ethers.provider.getBalance(addr4.address)
     const balBefore5 = await ethers.provider.getBalance(addr5.address)
 
-    await this.squidBetPrizePool.winnersClaimPrizePool()
+    await squidBetPrizePool.winnersClaimPrizePool()
 
     const balAfter1 = await ethers.provider.getBalance(addr1.address)
     const balAfter2 = await ethers.provider.getBalance(addr2.address)
@@ -929,14 +620,14 @@ describe('SquidBets', function () {
     expect(balBefore5).to.lt(balAfter5)
 
     await expect(
-      this.squidBetPrizePool.connect(addr1).winnerClaimPrizePool(),
+      squidBetPrizePool.connect(addr1).winnerClaimPrizePool(),
     ).to.be.revertedWith(
       'Only a Winner of the Squid Bet Competition can claim the Prize Pool',
     )
   })
 
   it("Squidbets prize pool non-winner can't withdraw", async function () {
-    await this.squidBetPrizePool.addMultipleWinnersAddress([
+    await squidBetPrizePool.addMultipleWinnersAddress([
       addr1.address,
       addr2.address,
       addr3.address,
@@ -945,14 +636,14 @@ describe('SquidBets', function () {
     ])
 
     await expect(
-      this.squidBetPrizePool.connect(addr6).winnerClaimPrizePool(),
+      squidBetPrizePool.connect(addr6).winnerClaimPrizePool(),
     ).to.be.revertedWith(
       'Only a Winner of the Squid Bet Competition can claim the Prize Pool',
     )
   })
 
   it("Squidbets prize pool winner can't withdraw twice", async function () {
-    await this.squidBetPrizePool.addMultipleWinnersAddress([
+    await squidBetPrizePool.addMultipleWinnersAddress([
       addr1.address,
       addr2.address,
       addr3.address,
@@ -962,19 +653,19 @@ describe('SquidBets', function () {
 
     const balBefore1 = await ethers.provider.getBalance(addr1.address)
 
-    await this.squidBetPrizePool.connect(addr1).winnerClaimPrizePool()
+    await squidBetPrizePool.connect(addr1).winnerClaimPrizePool()
 
     const balAfter1 = await ethers.provider.getBalance(addr1.address)
 
     expect(balBefore1).to.lt(balAfter1)
 
     await expect(
-      this.squidBetPrizePool.connect(addr6).winnerClaimPrizePool(),
+      squidBetPrizePool.connect(addr6).winnerClaimPrizePool(),
     ).to.be.revertedWith(
       'Only a Winner of the Squid Bet Competition can claim the Prize Pool',
     )
     await expect(
-      this.squidBetPrizePool.connect(addr1).winnerClaimPrizePool(),
+      squidBetPrizePool.connect(addr1).winnerClaimPrizePool(),
     ).to.be.revertedWith(
       'Only a Winner of the Squid Bet Competition can claim the Prize Pool',
     )

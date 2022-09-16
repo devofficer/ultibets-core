@@ -26,7 +26,7 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
   log('----------------------------------------------------')
 
   args = [UltiBetsTreasury.address, SquidBetPrizePool.address];
-  const SquidBetPlayersRegistration = await deploy('SquidBetPlayersRegistration', {
+  const SquidBetRegistration = await deploy('SquidBetRegistration', {
     from: deployer,
     args: args,
     log: true,
@@ -35,12 +35,12 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
 
   if (!isDevChain(network.name) && process.env.ETHERSCAN_API_KEY) {
     log('Verifying...')
-    await verify(SquidBetPlayersRegistration.address, args)
+    await verify(SquidBetRegistration.address, args)
   }
   log('----------------------------------------------------')
 
-  args = [SquidBetPrizePool.address, SquidBetPlayersRegistration.address];
-  const SquidBetPlayersStartRound = await deploy('SquidBetPlayersStartRound', {
+  args = [SquidBetPrizePool.address, SquidBetRegistration.address];
+  const SquidBetStartRound = await deploy('SquidBetStartRound', {
     from: deployer,
     args: args,
     log: true,
@@ -49,12 +49,12 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
 
   if (!isDevChain(network.name) && process.env.ETHERSCAN_API_KEY) {
     log('Verifying...')
-    await verify(SquidBetPlayersStartRound.address, args)
+    await verify(SquidBetStartRound.address, args)
   }
   log('----------------------------------------------------')
 
-  args = [SquidBetPrizePool.address, SquidBetPlayersStartRound.address];
-  const SquidBetPlayersSecondRound = await deploy('SquidBetPlayersSecondRound', {
+  args = [SquidBetPrizePool.address, SquidBetStartRound.address];
+  const SquidBetSecondRound = await deploy('SquidBetSecondRound', {
     from: deployer,
     args: args,
     log: true,
@@ -63,12 +63,12 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
 
   if (!isDevChain(network.name) && process.env.ETHERSCAN_API_KEY) {
     log('Verifying...')
-    await verify(SquidBetPlayersSecondRound.address, args)
+    await verify(SquidBetSecondRound.address, args)
   }
   log('----------------------------------------------------')
 
-  args = [SquidBetPrizePool.address, SquidBetPlayersSecondRound.address];
-  const SquidBetPlayersThridRound = await deploy('SquidBetPlayersThridRound', {
+  args = [SquidBetPrizePool.address, SquidBetSecondRound.address];
+  const SquidBetThirdRound = await deploy('SquidBetThirdRound', {
     from: deployer,
     args: args,
     log: true,
@@ -77,12 +77,12 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
 
   if (!isDevChain(network.name) && process.env.ETHERSCAN_API_KEY) {
     log('Verifying...')
-    await verify(SquidBetPlayersThridRound.address, args)
+    await verify(SquidBetThirdRound.address, args)
   }
   log('----------------------------------------------------')
 
-  args = [SquidBetPrizePool.address, SquidBetPlayersThridRound.address];
-  const SquidBetPlayersForthRound = await deploy('SquidBetPlayersForthRound', {
+  args = [SquidBetPrizePool.address, SquidBetThirdRound.address];
+  const SquidBetForthRound = await deploy('SquidBetForthRound', {
     from: deployer,
     args: args,
     log: true,
@@ -91,13 +91,13 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
 
   if (!isDevChain(network.name) && process.env.ETHERSCAN_API_KEY) {
     log('Verifying...')
-    await verify(SquidBetPlayersForthRound.address, args)
+    await verify(SquidBetForthRound.address, args)
   }
   log('----------------------------------------------------')
 
-  const VRFv2Consumer = ethers.getContract('VRFv2Consumer');
-  args = [SquidBetPrizePool.address, SquidBetPlayersForthRound.address, VRFv2Consumer.address];
-  const SquidBetPlayersFinalRound = await deploy('SquidBetPlayersFinalRound', {
+  const VRFv2Consumer = await ethers.getContract('VRFv2Consumer');
+  args = [SquidBetPrizePool.address, SquidBetForthRound.address, VRFv2Consumer.address];
+  const SquidBetFinalRound = await deploy('SquidBetFinalRound', {
     from: deployer,
     args: args,
     log: true,
@@ -106,9 +106,9 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
 
   if (!isDevChain(network.name) && process.env.ETHERSCAN_API_KEY) {
     log('Verifying...')
-    await verify(SquidBetPlayersFinalRound.address, args)
+    await verify(SquidBetFinalRound.address, args)
   }
   log('----------------------------------------------------')
 }
 
-module.exports.tags = ['all', 'prize_pool']
+module.exports.tags = ['all', 'squid_bet']
