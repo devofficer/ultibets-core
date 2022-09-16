@@ -3,9 +3,9 @@
 // and it would be a circular dependency
 const { run, network } = require('hardhat')
 const {
-  networkConfig,
+  NETWORK_CONFIG,
   VERIFICATION_BLOCK_CONFIRMATIONS,
-  developmentChains,
+  DEV_CHAINS,
 } = require('./config')
 
 const autoFundCheck = async (
@@ -16,7 +16,7 @@ const autoFundCheck = async (
 ) => {
   const chainId = network.config.chainId
   console.log('Checking to see if contract can be auto-funded with LINK:')
-  const amount = networkConfig[chainId]['fundAmount']
+  const amount = NETWORK_CONFIG[chainId]['fundAmount']
   //check to see if user has enough LINK
   const accounts = await ethers.getSigners()
   const signer = accounts[0]
@@ -69,18 +69,16 @@ const getRevertMessage = (reason) => {
   return `VM Exception while processing transaction: reverted with reason string '${reason}'`
 }
 
-const getWaitBlockConfirmations = (networkName) => {
-  return developmentChains.includes(networkName)
-    ? 1
-    : VERIFICATION_BLOCK_CONFIRMATIONS
-}
-
 const isDevChain = (chain) => {
   if (typeof chain === 'number') {
     return chain === 31337
   } else {
-    return developmentChains.includes(chain)
+    return DEV_CHAINS.includes(chain)
   }
+}
+
+const getWaitBlockConfirmations = (chain) => {
+  return isDevChain(chain) ? 1 : VERIFICATION_BLOCK_CONFIRMATIONS
 }
 
 module.exports = {

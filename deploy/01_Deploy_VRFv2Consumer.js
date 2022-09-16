@@ -1,6 +1,10 @@
 const { network } = require('hardhat')
-const { networkConfig, developmentChains } = require('../utils/config')
-const { verify, getWaitBlockConfirmations } = require('../utils/helpers')
+const { NETWORK_CONFIG } = require('../utils/config')
+const {
+  verify,
+  getWaitBlockConfirmations,
+  isDevChain,
+} = require('../utils/helpers')
 
 module.exports = async ({ getNamedAccounts, deployments }) => {
   const { deploy, log } = deployments
@@ -14,7 +18,7 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
 
     vrfCoordinatorAddress = VRFCoordinatorV2Mock.address
 
-    const fundAmount = networkConfig[chainId]['fundAmount']
+    const fundAmount = NETWORK_CONFIG[chainId]['fundAmount']
     const transaction = await VRFCoordinatorV2Mock.createSubscription()
     const transactionReceipt = await transaction.wait(1)
     subscriptionId = ethers.BigNumber.from(
@@ -23,9 +27,9 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     await VRFCoordinatorV2Mock.fundSubscription(subscriptionId, fundAmount)
   } else {
     subscriptionId = process.env.VRF_SUBSCRIPTION_ID
-    vrfCoordinatorAddress = networkConfig[chainId]['vrfCoordinator']
+    vrfCoordinatorAddress = NETWORK_CONFIG[chainId]['vrfCoordinator']
   }
-  const keyHash = networkConfig[chainId]['keyHash']
+  const keyHash = NETWORK_CONFIG[chainId]['keyHash']
   const args = [subscriptionId, vrfCoordinatorAddress, keyHash]
   const VRFv2Consumer = await deploy('VRFv2Consumer', {
     from: deployer,
@@ -34,10 +38,7 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     waitConfirmations: getWaitBlockConfirmations(network.name),
   })
 
-  if (
-    !developmentChains.includes(network.name) &&
-    process.env.ETHERSCAN_API_KEY
-  ) {
+  if (!isDevChain(chainId) && process.env.ETHERSCAN_API_KEY) {
     log('Verifying...')
     await verify(VRFv2Consumer.address, args)
   }

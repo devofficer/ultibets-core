@@ -1,4 +1,4 @@
-const networkConfig = {
+const NETWORK_CONFIG = {
   default: {
     name: "hardhat",
     fee: "100000000000000000",
@@ -33,7 +33,7 @@ const networkConfig = {
   },
 }
 
-const developmentChains = ["hardhat", "localhost"]
+const DEV_CHAINS = ["hardhat", "localhost"]
 const VERIFICATION_BLOCK_CONFIRMATIONS = 6
 
 /**
@@ -43,8 +43,8 @@ const VERIFICATION_BLOCK_CONFIRMATIONS = 6
  const GAS_PRICE_LINK = '1000000000' // 0.000000001 LINK per gas
 
 module.exports = {
-  networkConfig,
-  developmentChains,
+  NETWORK_CONFIG,
+  DEV_CHAINS,
   VERIFICATION_BLOCK_CONFIRMATIONS,
   BASE_FEE,
   GAS_PRICE_LINK

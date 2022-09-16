@@ -1,6 +1,9 @@
 const { network } = require('hardhat')
-const { developmentChains } = require('../utils/config')
-const { verify, getWaitBlockConfirmations } = require('../utils/helpers')
+const {
+  verify,
+  getWaitBlockConfirmations,
+  isDevChain,
+} = require('../utils/helpers')
 
 module.exports = async ({ getNamedAccounts, deployments }) => {
   const { deploy, log } = deployments
@@ -12,10 +15,7 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     waitConfirmations: getWaitBlockConfirmations(network.name),
   })
 
-  if (
-    !developmentChains.includes(network.name) &&
-    process.env.ETHERSCAN_API_KEY
-  ) {
+  if (!isDevChain(network.name) && process.env.ETHERSCAN_API_KEY) {
     log('Verifying...')
     await verify(UltiBetsToken.address)
   }
