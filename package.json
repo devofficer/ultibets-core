@@ -18,5 +18,10 @@
     "@chainlink/token": "^1.1.0",
     "@openzeppelin/contracts": "^4.5.0",
     "hardhat-deploy": "^0.11.15"
+  },
+  "scripts": {
+    "compile": "hardhat compile --network",
+    "deploy": "hardhat deploy --network",
+    "test": "hardhat test --network"
   }
 }
