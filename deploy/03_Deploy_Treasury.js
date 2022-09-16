@@ -1,6 +1,10 @@
 const { network, ethers } = require('hardhat')
-const { developmentChains, networkConfig } = require('../utils/config')
-const { verify, getWaitBlockConfirmations, isDevChain } = require('../utils/helpers')
+const { networkConfig } = require('../utils/config')
+const {
+  verify,
+  getWaitBlockConfirmations,
+  isDevChain,
+} = require('../utils/helpers')
 
 module.exports = async ({ getNamedAccounts, deployments }) => {
   const { deploy, log } = deployments
@@ -9,13 +13,12 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
   let fundToken
 
   if (isDevChain(chainId)) {
-    const MockToken = await ethers.getContract('MockToken');
-    fundToken = MockToken.address;
+    const MockToken = await ethers.getContract('MockToken')
+    fundToken = MockToken.address
   } else {
-    fundToken = networkConfig[chainId].fundToken;
+    fundToken = networkConfig[chainId].fundToken
   }
-
-  const args = [[deployer.address], 1, fundToken]
+  const args = [[deployer], 1, fundToken]
 
   const UltiBetsTreasury = await deploy('UltiBetsTreasury', {
     from: deployer,
@@ -24,10 +27,7 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     waitConfirmations: getWaitBlockConfirmations(network.name),
   })
 
-  if (
-    !developmentChains.includes(network.name) &&
-    process.env.ETHERSCAN_API_KEY
-  ) {
+  if (!isDevChain(chainId) && process.env.ETHERSCAN_API_KEY) {
     log('Verifying...')
     await verify(UltiBetsTreasury.address, args)
   }
