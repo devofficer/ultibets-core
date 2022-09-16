@@ -75,9 +75,18 @@ const getWaitBlockConfirmations = (networkName) => {
     : VERIFICATION_BLOCK_CONFIRMATIONS
 }
 
+const isDevChain = (chain) => {
+  if (typeof chain === 'number') {
+    return chain === 31337
+  } else {
+    return developmentChains.includes(chain)
+  }
+}
+
 module.exports = {
   autoFundCheck,
   verify,
   getRevertMessage,
   getWaitBlockConfirmations,
+  isDevChain,
 }

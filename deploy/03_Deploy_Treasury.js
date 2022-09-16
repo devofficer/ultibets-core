@@ -1,6 +1,6 @@
 const { network, ethers } = require('hardhat')
 const { developmentChains, networkConfig } = require('../utils/config')
-const { verify, getWaitBlockConfirmations } = require('../utils/helpers')
+const { verify, getWaitBlockConfirmations, isDevChain } = require('../utils/helpers')
 
 module.exports = async ({ getNamedAccounts, deployments }) => {
   const { deploy, log } = deployments
@@ -8,8 +8,9 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
   const chainId = network.config.chainId
   let fundToken
 
-  if (developmentChains.includes(network.name)) {
-    fundToken = (await ethers.getContract('MockToken')).address
+  if (isDevChain(chainId)) {
+    const MockToken = await ethers.getContract('MockToken');
+    fundToken = MockToken.address;
   } else {
     fundToken = networkConfig[chainId].fundToken;
   }
