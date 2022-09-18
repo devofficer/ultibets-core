@@ -5,14 +5,14 @@ import "../utils/CustomAdmin.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 contract SquidBetPrizePool is CustomAdmin, ReentrancyGuard {
-    address public UltiBetTreasury;
+    address public treasury;
     mapping(address => bool) public isEqualWinner;
     address[] public equalWinners;
     bool public prizePoolHasBeenClaimed = false;
 
-    constructor(address _UltiBetTreasury) {
-        require(_UltiBetTreasury != address(0), " not a valid address");
-        UltiBetTreasury = _UltiBetTreasury;
+    constructor(address _treasury) {
+        require(_treasury != address(0), " not a valid address");
+        treasury = _treasury;
     }
 
     receive() external payable {}
@@ -82,7 +82,7 @@ contract SquidBetPrizePool is CustomAdmin, ReentrancyGuard {
 
     /// @notice Emergency withdrawal function
     function EmergencySafeWithdraw() external  onlyAdmin {
-        address payable to = payable(UltiBetTreasury);
+        address payable to = payable(treasury);
         to.transfer(address(this).balance);
     }
 }

@@ -90,6 +90,8 @@ contract SquidBetSecondRound is CustomAdmin, ReentrancyGuard {
         betsAmountPerBettor[msg.sender][_side] += betAmount;
         amountPerBettor[msg.sender] += betAmount;
 
+        payable(prizePool).transfer(msg.value);
+        
         emit BetPlaced(msg.sender, _side, msg.value, block.timestamp);
     }
 
@@ -109,11 +111,10 @@ contract SquidBetSecondRound is CustomAdmin, ReentrancyGuard {
         require(isEventCancelled == true, "Event is not cancelled");
         require(amountPerBettor[msg.sender] > 0, "You do not make any bets");
 
-        uint256 BettorBet = amountPerBettor[msg.sender];
+        uint256 betAmount = amountPerBettor[msg.sender];
         amountPerBettor[msg.sender] = 0;
-    
 
-        payable(msg.sender).transfer(BettorBet);
+        payable(prizePool).transfer(betAmount);
     }
 
 
